@@ -100,7 +100,10 @@ let me = null, storeId = null, filter = "waiting", current = null, convs = [], l
 (async () => {
   const cfg = await fetch(CHAT_FUNCTION_URL).then((r) => r.json());
   sb = supabase.createClient(cfg.url, cfg.anonKey);
-  sb.auth.onAuthStateChange((_e, session) => session ? boot(session.user) : (me && location.reload()));
+  // Não chamar o Supabase dentro do callback (trava a sessão salva ao reabrir o painel): adia com setTimeout.
+  sb.auth.onAuthStateChange((_e, session) => {
+    setTimeout(() => { if (session) boot(session.user); else if (me) location.reload(); }, 0);
+  });
 })();
 
 $("#login").onsubmit = async (e) => {
@@ -125,6 +128,9 @@ async function boot(user) {
     .subscribe();
   if ("Notification" in window && Notification.permission === "default") Notification.requestPermission();
 }
+
+// No celular o navegador pausa a página em segundo plano: ao voltar, recarrega a lista.
+document.addEventListener("visibilitychange", () => { if (!document.hidden && me && storeId) loadConvs(); });
 
 document.querySelectorAll(".tabs button").forEach((b) => b.onclick = () => {
   document.querySelectorAll(".tabs button").forEach((x) => x.classList.remove("on"));
