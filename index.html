@@ -62,8 +62,8 @@
 
 <form id="login">
   <h2 style="margin:0 0 6px">Painel do Chat</h2>
-  <input id="email" type="email" placeholder="E-mail" required>
-  <input id="pass" type="password" placeholder="Senha" required>
+  <input id="email" name="email" type="email" autocomplete="username" placeholder="E-mail" required>
+  <input id="pass" name="password" type="password" autocomplete="current-password" placeholder="Senha" required>
   <button class="primary">Entrar</button>
   <div id="loginerr" style="color:#b91c1c;font-size:13px"></div>
 </form>
@@ -102,7 +102,13 @@ let me = null, storeId = null, filter = "waiting", current = null, convs = [], l
   sb = supabase.createClient(cfg.url, cfg.anonKey);
   // Não chamar o Supabase dentro do callback (trava a sessão salva ao reabrir o painel): adia com setTimeout.
   sb.auth.onAuthStateChange((_e, session) => {
-    setTimeout(() => { if (session) boot(session.user); else if (me) location.reload(); }, 0);
+    setTimeout(() => {
+      if (session) return boot(session.user);
+      if (!me) return;
+      // Saída que não foi pelo botão "Sair": avisa na tela de login em vez de só recarregar.
+      try { if (!manualLogout) sessionStorage.setItem("expired", "1"); } catch (e) {}
+      location.reload();
+    }, 0);
   });
 })();
 
@@ -111,7 +117,14 @@ $("#login").onsubmit = async (e) => {
   const { error } = await sb.auth.signInWithPassword({ email: $("#email").value, password: $("#pass").value });
   $("#loginerr").textContent = error ? "Não foi possível entrar: " + error.message : "";
 };
-$("#logout").onclick = () => sb.auth.signOut();
+let manualLogout = false;
+$("#logout").onclick = () => { manualLogout = true; sb.auth.signOut(); };
+try {
+  if (sessionStorage.getItem("expired")) {
+    sessionStorage.removeItem("expired");
+    $("#loginerr").textContent = "Seu login expirou. Entre de novo (os avisos do app ntfy continuam chegando mesmo assim).";
+  }
+} catch (e) {}
 
 async function boot(user) {
   if (me) return; me = user;
@@ -130,7 +143,11 @@ async function boot(user) {
 }
 
 // No celular o navegador pausa a página em segundo plano: ao voltar, recarrega a lista.
-document.addEventListener("visibilitychange", () => { if (!document.hidden && me && storeId) loadConvs(); });
+document.addEventListener("visibilitychange", async () => {
+  if (document.hidden || !me || !storeId) return;
+  await sb.auth.getSession(); // renova o login primeiro, depois busca a lista
+  loadConvs();
+});
 
 document.querySelectorAll(".tabs button").forEach((b) => b.onclick = () => {
   document.querySelectorAll(".tabs button").forEach((x) => x.classList.remove("on"));
