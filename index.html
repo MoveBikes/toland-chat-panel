@@ -2,79 +2,153 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Chat To Land</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon-180.png">
 <meta name="theme-color" content="#111111">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="Chat To Land">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js"></script>
 <style>
-  :root{--bg:#f4f4f5;--card:#fff;--ink:#111;--muted:#6b7280;--line:#e5e7eb;--accent:#111;--warn:#d97706;--ok:#059669}
-  *{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);height:100vh}
-  button{font:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--line);background:#fff;padding:7px 12px}
-  button.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
-  input,textarea,select{font:inherit;border:1px solid var(--line);border-radius:8px;padding:9px 10px;width:100%}
-  #login{max-width:340px;margin:12vh auto;background:var(--card);padding:28px;border-radius:14px;display:flex;flex-direction:column;gap:10px}
-  #app{display:none;height:100vh;grid-template-columns:320px 1fr;grid-template-rows:52px 1fr}
-  header{grid-column:1/3;display:flex;align-items:center;gap:12px;padding:0 16px;background:var(--card);border-bottom:1px solid var(--line)}
-  header h1{font-size:16px;margin:0;flex:1}
-  header select{width:auto}
-  #list{background:var(--card);border-right:1px solid var(--line);overflow-y:auto}
-  .tabs{display:flex;gap:4px;padding:10px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--card)}
-  .tabs button{flex:1;padding:6px;font-size:13px}.tabs button.on{background:var(--accent);color:#fff}
-  .conv{padding:12px 14px;border-bottom:1px solid var(--line);cursor:pointer}
-  .conv:hover,.conv.sel{background:#f9fafb}
-  .conv .top{display:flex;justify-content:space-between;font-size:14px;font-weight:600}
-  .conv .prev{font-size:13px;color:var(--muted);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .tag{font-size:11px;font-weight:600;padding:2px 7px;border-radius:99px;background:#eee}
-  .tag.waiting{background:#fef3c7;color:var(--warn)}.tag.open{background:#d1fae5;color:var(--ok)}.tag.bot{background:#e0e7ff;color:#4338ca}
-  #chat{display:flex;flex-direction:column;min-height:0}
-  #chathead{display:flex;align-items:center;gap:8px;padding:10px 16px;background:var(--card);border-bottom:1px solid var(--line)}
-  #chathead .info{flex:1;font-size:13px;color:var(--muted)}#chathead .info b{color:var(--ink);font-size:15px}
-  #msgs{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:8px}
-  .m{max-width:70%;padding:9px 12px;border-radius:12px;font-size:14px;line-height:1.4;white-space:pre-wrap;word-wrap:break-word}
-  .m small{display:block;font-size:11px;opacity:.6;margin-top:4px}
-  .visitor{align-self:flex-start;background:#fff;border:1px solid var(--line)}
-  .bot{align-self:flex-end;background:#e0e7ff}.agent{align-self:flex-end;background:var(--accent);color:#fff}
-  .system{align-self:center;font-size:12px;color:var(--muted)}
-  #composer{display:flex;gap:8px;padding:12px;background:var(--card);border-top:1px solid var(--line)}
-  #composer textarea{height:44px;resize:none}
-  .empty{margin:auto;color:var(--muted)}
+  :root{--bg:#f6f6f7;--card:#fff;--ink:#111;--muted:#71717a;--line:#ececee;--brand:#dfff00;--dark:#111;--soft:#f1f1f3;
+    --warn:#b45309;--ok:#047857;--top:env(safe-area-inset-top,0px);--bottom:env(safe-area-inset-bottom,0px)}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);font-size:15px;-webkit-font-smoothing:antialiased}
+  button{font:inherit;cursor:pointer;border:0;background:none;color:inherit;padding:0}
+  input,textarea,select{font:inherit;font-size:16px;color:var(--ink)}
+  a{color:inherit}
+
+  /* Login */
+  #login{min-height:100dvh;display:flex;flex-direction:column;justify-content:center;gap:12px;padding:calc(24px + var(--top)) 28px 24px;max-width:420px;margin:0 auto}
+  #login .logo{width:64px;height:64px;border-radius:18px;background:var(--dark);display:grid;place-items:center;margin-bottom:6px}
+  #login h2{margin:0;font-size:26px;letter-spacing:-.02em}#login p{margin:0 0 10px;color:var(--muted)}
+  #login input{border:1px solid var(--line);background:#fff;border-radius:14px;padding:14px 16px;width:100%}
+  #login button{background:var(--dark);color:#fff;border-radius:14px;padding:15px;font-weight:600;margin-top:4px}
+
+  /* Estrutura */
+  #app{display:none;height:100dvh;grid-template-columns:360px minmax(0,1fr);background:var(--card);overflow:hidden}
+  #list,#chat{min-width:0}
+  #list{display:flex;flex-direction:column;min-height:0;border-right:1px solid var(--line);background:var(--card)}
+  .top{background:var(--dark);color:#fff;padding:calc(12px + var(--top)) 18px 14px}
+  .top .row{display:flex;align-items:center;gap:10px}
+  .top h1{flex:1;margin:0;font-size:24px;font-weight:700;letter-spacing:-.02em}
+  .brand{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;letter-spacing:.12em;color:var(--brand);margin-bottom:6px}
+  .brand i{width:8px;height:8px;border-radius:50%;background:var(--brand);display:inline-block}
+  .top select{background:#222;color:#fff;border:0;border-radius:10px;padding:6px 8px;font-size:13px;max-width:130px}
+  .iconbtn{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:#222;color:#fff}
+  .iconbtn svg{width:18px;height:18px}
+  .tabs{display:flex;gap:8px;padding:12px 14px;overflow-x:auto;border-bottom:1px solid var(--line);scrollbar-width:none;flex:none}
+  .tabs::-webkit-scrollbar{display:none}
+  .tabs button{flex:none;padding:8px 14px;border-radius:99px;background:var(--soft);font-size:14px;font-weight:600;color:#3f3f46;white-space:nowrap}
+  .tabs button.on{background:var(--dark);color:#fff}
+  .tabs button .n{display:inline-block;min-width:20px;padding:0 6px;margin-left:6px;border-radius:99px;background:var(--brand);color:#111;font-size:12px;line-height:20px;text-align:center}
+  #convs{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:var(--bottom)}
+
+  .conv{display:flex;gap:12px;align-items:center;padding:12px 16px;cursor:pointer;position:relative}
+  .conv:active,.conv.sel{background:#fafafa}
+  .conv+.conv:before{content:"";position:absolute;top:0;left:76px;right:0;border-top:1px solid var(--line)}
+  .av{flex:none;width:48px;height:48px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:17px;color:#111;position:relative}
+  .av.sm{width:38px;height:38px;font-size:14px}
+  .av .dot{position:absolute;right:0;bottom:1px;width:13px;height:13px;border-radius:50%;border:2px solid #fff;background:#a1a1aa}
+  .av .dot.waiting{background:#f59e0b}.av .dot.open{background:#10b981}.av .dot.bot{background:#6366f1}
+  .conv .body{flex:1;min-width:0}
+  .conv .l1{display:flex;align-items:baseline;gap:8px}
+  .conv .name{flex:1;font-weight:600;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .conv .time{font-size:13px;color:var(--muted);flex:none}
+  .conv .prev{font-size:14px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .conv.unread .name{font-weight:700}.conv.unread .prev{color:var(--ink);font-weight:500}
+  .conv.unread .time{color:var(--ink);font-weight:600}
+  .pill{font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;background:var(--soft);color:#52525b}
+  .pill.waiting{background:#fef3c7;color:var(--warn)}.pill.open{background:#d1fae5;color:var(--ok)}.pill.bot{background:#e0e7ff;color:#4338ca}
+  .empty{margin:auto;color:var(--muted);text-align:center;padding:40px 24px}
+  .empty svg{width:44px;height:44px;opacity:.35;display:block;margin:0 auto 10px}
+
+  /* Conversa */
+  #chat{display:flex;flex-direction:column;min-height:0;background:var(--card)}
+  #chathead{flex:none;display:flex;align-items:center;gap:10px;padding:calc(10px + var(--top)) 12px 10px;border-bottom:1px solid var(--line);background:rgba(255,255,255,.96);backdrop-filter:blur(10px)}
+  #back{width:34px;height:34px;display:none;place-items:center;margin-left:-4px}
+  #back svg{width:24px;height:24px}
+  #chathead .info{flex:1;min-width:0}
+  #chathead .info b{display:block;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #chathead .info span{display:block;font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #chathead .info a{color:var(--muted)}
+  #menu{position:relative}
+  #menu .iconbtn{background:var(--soft);color:var(--ink)}
+  #menu .dd{display:none;position:absolute;right:0;top:42px;background:#fff;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.15);min-width:190px;overflow:hidden;z-index:5}
+  #menu.open .dd{display:block}
+  #menu .dd button{display:block;width:100%;text-align:left;padding:13px 16px;font-size:15px}
+  #menu .dd button+button{border-top:1px solid var(--line)}
+  #menu .dd .danger{color:#b91c1c}
+  .takeover{flex:none;display:flex;align-items:center;gap:10px;padding:10px 14px;background:#fffbe6;border-bottom:1px solid #fde68a;font-size:14px}
+  .takeover span{flex:1}.takeover button{background:var(--dark);color:#fff;border-radius:99px;padding:7px 14px;font-weight:600;font-size:14px}
+
+  #msgs{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 12px;display:flex;flex-direction:column;gap:3px;background:var(--card)}
+  .day{align-self:center;font-size:12px;color:var(--muted);font-weight:600;margin:12px 0 6px}
+  .m{max-width:78%;padding:9px 13px;border-radius:20px;font-size:15px;line-height:1.38;white-space:pre-wrap;word-wrap:break-word}
+  .m small{display:block;font-size:11px;margin-top:3px;opacity:.55}
+  .visitor{align-self:flex-start;background:var(--soft);border-bottom-left-radius:6px}
+  .agent{align-self:flex-end;background:var(--dark);color:#fff;border-bottom-right-radius:6px}
+  .bot{align-self:flex-end;background:#f4ffb3;border-bottom-right-radius:6px}
+  .m + .m{margin-top:2px}.visitor+.agent,.agent+.visitor,.bot+.visitor,.visitor+.bot{margin-top:10px}
+  .system{align-self:center;max-width:90%;text-align:center;font-size:12px;color:var(--muted);background:none;padding:6px 10px}
+
+  #composer{flex:none;display:flex;align-items:flex-end;gap:8px;padding:8px 10px calc(8px + var(--bottom));border-top:1px solid var(--line);background:#fff}
+  #composer textarea{flex:1;min-height:40px;max-height:120px;resize:none;border:1px solid var(--line);border-radius:20px;padding:9px 14px;background:var(--soft);line-height:1.35}
+  #pbtn{width:40px;height:40px;border-radius:50%;background:var(--soft);display:grid;place-items:center;flex:none}
+  #pbtn svg,#send svg{width:20px;height:20px}
+  #send{width:40px;height:40px;border-radius:50%;background:var(--brand);color:#111;display:grid;place-items:center;flex:none}
+
   .pcards{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
-  .pcard{width:150px;background:#fff;color:var(--ink);border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:12px;white-space:normal}
+  .pcard{width:150px;background:#fff;color:var(--ink);border:1px solid var(--line);border-radius:14px;overflow:hidden;font-size:12px;white-space:normal;text-decoration:none}
   .pcard img{width:100%;height:90px;object-fit:contain;display:block;background:#fff}
   .pcard div{padding:6px 8px}.pcard b{display:block;font-size:12px}.pcard s{color:var(--muted);margin-left:4px}
-  #picker{display:none;border-top:1px solid var(--line);background:var(--card);padding:10px 12px;max-height:45vh;overflow-y:auto}
+  #picker{display:none;flex:none;border-top:1px solid var(--line);background:#fff;padding:10px 12px;max-height:50vh;overflow-y:auto}
   #picker.open{display:block}
   #picker .row{display:flex;gap:8px;margin-bottom:8px}
+  #picker input{flex:1;border:1px solid var(--line);border-radius:20px;padding:9px 14px;background:var(--soft)}
+  #picker .row button{padding:0 12px;color:var(--muted);font-weight:600}
   #picker .res{display:flex;flex-direction:column;gap:6px}
-  #picker .it{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:10px;padding:6px}
+  #picker .it{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:14px;padding:6px}
   #picker .it img{width:52px;height:52px;object-fit:contain;flex:none}
   #picker .it .t{flex:1;font-size:13px}#picker .it .t small{display:block;color:var(--muted)}
+  #picker .it button{background:var(--dark);color:#fff;border-radius:99px;padding:7px 12px;font-size:13px;font-weight:600}
   .oos{color:#b91c1c}
-  @media (max-width:760px){#app{grid-template-columns:1fr}#list{display:var(--list,block)}#chat{display:var(--chat,none)}}
+
+  @media (max-width:760px){
+    #app{grid-template-columns:minmax(0,1fr)}
+    #list{display:var(--list,flex);border-right:0}
+    #chat{display:var(--chat,none)}
+    #back{display:grid}
+  }
 </style>
 </head>
 <body>
 
 <form id="login">
-  <h2 style="margin:0 0 6px">Painel do Chat</h2>
+  <div class="logo"><svg width="34" height="34" viewBox="0 0 512 512"><path fill="#dfff00" d="M256 104c-97 0-176 66-176 148 0 41 20 78 53 105l-17 71 79-39c19 6 39 9 61 9 97 0 176-66 176-148S353 104 256 104z"/></svg></div>
+  <h2>Chat To Land</h2>
+  <p>Entre para responder os clientes.</p>
   <input id="email" name="email" type="email" autocomplete="username" placeholder="E-mail" required>
   <input id="pass" name="password" type="password" autocomplete="current-password" placeholder="Senha" required>
-  <button class="primary">Entrar</button>
-  <div id="loginerr" style="color:#b91c1c;font-size:13px"></div>
+  <button>Entrar</button>
+  <div id="loginerr" style="color:#b91c1c;font-size:14px"></div>
 </form>
 
 <div id="app">
-  <header>
-    <h1>Painel do Chat</h1>
-    <select id="store"></select>
-    <button id="logout">Sair</button>
-  </header>
   <aside id="list">
+    <div class="top">
+      <div class="brand"><i></i>TO·LAND</div>
+      <div class="row">
+        <h1>Conversas</h1>
+        <select id="store"></select>
+        <button id="logout" class="iconbtn" title="Sair" aria-label="Sair"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg></button>
+      </div>
+    </div>
     <div class="tabs">
       <button data-f="waiting" class="on">Aguardando</button>
       <button data-f="open">Abertas</button>
@@ -83,7 +157,7 @@
     </div>
     <div id="convs"></div>
   </aside>
-  <main id="chat"><div class="empty">Selecione uma conversa</div></main>
+  <main id="chat"></main>
 </div>
 
 <script>
@@ -93,7 +167,33 @@ let sb = null;
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
 const fmt = (t) => new Date(t).toLocaleString("pt-BR", { day:"2-digit", month:"2-digit", hour:"2-digit", minute:"2-digit" });
-const LABEL = { bot:"Bot", waiting:"Aguardando", open:"Aberta", closed:"Fechada" };
+const LABEL = { bot:"Bot", waiting:"Aguardando", open:"Abertas", closed:"Fechadas" };
+const STATUS = { bot:"Bot", waiting:"Aguardando", open:"Em atendimento", closed:"Fechada" };
+// Hora curta no estilo de app de mensagens: 14:05, ontem, seg, 12/11
+function ago(t) {
+  const d = new Date(t), now = new Date(), day = 864e5;
+  const start = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  if (d.getTime() >= start) return d.toLocaleTimeString("pt-BR", { hour:"2-digit", minute:"2-digit" });
+  if (d.getTime() >= start - day) return "ontem";
+  if (d.getTime() >= start - 6 * day) return d.toLocaleDateString("pt-BR", { weekday:"short" }).replace(".", "");
+  return d.toLocaleDateString("pt-BR", { day:"2-digit", month:"2-digit" });
+}
+function dayLabel(t) {
+  const d = new Date(t), now = new Date();
+  const k = (x) => x.toDateString();
+  if (k(d) === k(now)) return "Hoje";
+  if (k(d) === k(new Date(now.getTime() - 864e5))) return "Ontem";
+  return d.toLocaleDateString("pt-BR", { weekday:"long", day:"2-digit", month:"long" });
+}
+const PALETTE = ["#dfff00","#bae6fd","#fecdd3","#d9f99d","#fde68a","#c7d2fe","#a7f3d0","#fbcfe8"];
+const nameOf = (c) => c.visitor_name || c.visitor_email || "Visitante " + c.id.slice(0, 4).toUpperCase();
+function avatar(c, cls = "") {
+  const n = nameOf(c), parts = n.replace(/@.*/, "").split(/[\s._-]+/).filter(Boolean);
+  const ini = ((parts[0]?.[0] ?? "?") + (parts[1]?.[0] ?? "")).toUpperCase();
+  let h = 0; for (const ch of c.id) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  return `<div class="av ${cls}" style="background:${PALETTE[h % PALETTE.length]}">${esc(ini)}<span class="dot ${c.status}"></span></div>`;
+}
+const ICON_EMPTY = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>';
 
 let me = null, storeId = null, filter = "waiting", current = null, convs = [], lastMsg = {};
 
@@ -128,7 +228,7 @@ try {
 
 async function boot(user) {
   if (me) return; me = user;
-  $("#login").style.display = "none"; $("#app").style.display = "grid";
+  $("#login").style.display = "none"; $("#app").style.display = "grid"; renderChat();
   const { data: stores } = await sb.from("stores").select("id, name").order("name");
   if (!stores?.length) { $("#chat").innerHTML = '<div class="empty">Seu usuário ainda não está ligado a nenhuma loja.</div>'; return; }
   $("#store").innerHTML = stores.map((s) => `<option value="${s.id}">${esc(s.name)}</option>`).join("");
@@ -171,18 +271,24 @@ async function loadConvs() {
 function updateTabCounts() {
   document.querySelectorAll(".tabs button").forEach((b) => {
     const n = convs.filter((c) => c.status === b.dataset.f).length;
-    b.textContent = LABEL[b.dataset.f] + (n && b.dataset.f !== "closed" ? ` (${n})` : "");
+    b.innerHTML = LABEL[b.dataset.f] + (n && b.dataset.f !== "closed" ? `<span class="n">${n}</span>` : "");
   });
 }
 
 function renderList() {
   const rows = convs.filter((c) => c.status === filter);
-  $("#convs").innerHTML = rows.length ? rows.map((c) => `
-    <div class="conv ${current?.id === c.id ? "sel" : ""}" data-id="${c.id}">
-      <div class="top"><span>${esc(c.visitor_name || c.visitor_email || "Visitante " + c.id.slice(0, 4))}</span><span class="tag ${c.status}">${LABEL[c.status]}</span></div>
-      <div class="prev">${esc(lastMsg[c.id]?.body ?? "")}</div>
-      <div class="prev" style="font-size:11px">${fmt(c.last_message_at)}</div>
-    </div>`).join("") : '<div class="empty" style="padding:20px">Nada aqui.</div>';
+  $("#convs").innerHTML = rows.length ? rows.map((c) => {
+    const lm = lastMsg[c.id];
+    const unread = lm && lm.sender === "visitor" && c.status !== "closed";
+    const prev = lm ? (lm.sender === "agent" ? "Você: " : lm.sender === "bot" ? "Bot: " : "") + lm.body : "";
+    return `<div class="conv ${current?.id === c.id ? "sel" : ""} ${unread ? "unread" : ""}" data-id="${c.id}">
+      ${avatar(c)}
+      <div class="body">
+        <div class="l1"><span class="name">${esc(nameOf(c))}</span><span class="time">${ago(lm?.created_at || c.last_message_at)}</span></div>
+        <div class="prev">${esc(prev)}</div>
+      </div>
+    </div>`;
+  }).join("") : `<div class="empty">${ICON_EMPTY}Nenhuma conversa aqui.</div>`;
   document.querySelectorAll(".conv").forEach((el) => el.onclick = () => openConv(el.dataset.id));
 }
 
@@ -191,24 +297,31 @@ async function openConv(id) {
   renderChat(); renderList();
   document.documentElement.style.setProperty("--list", "none"); document.documentElement.style.setProperty("--chat", "flex");
   const { data } = await sb.from("messages").select("*").eq("conversation_id", id).order("created_at");
-  $("#msgs").innerHTML = ""; (data ?? []).forEach(addMsg);
+  lastDay = ""; $("#msgs").innerHTML = ""; (data ?? []).forEach(addMsg);
 }
 
 function renderChat() {
-  if (!current) { $("#chat").innerHTML = '<div class="empty">Selecione uma conversa</div>'; return; }
+  if (!current) { $("#chat").innerHTML = `<div class="empty">${ICON_EMPTY}Selecione uma conversa</div>`; return; }
   $("#chat").innerHTML = `
     <div id="chathead"></div>
+    <div id="takeover"></div>
     <div id="msgs"></div>
-    <div id="picker"><div class="row"><input id="pq" placeholder="Buscar produto (ex.: huntsman, alpine, capacete)"><button type="button" id="pclose">Fechar</button></div><div class="res"></div></div>
-    <form id="composer"><button type="button" id="pbtn" title="Enviar cartão de produto">🛍 Produto</button><textarea placeholder="Responder... (Enter envia, Shift+Enter quebra linha)"></textarea><button class="primary">Enviar</button></form>`;
+    <div id="picker"><div class="row"><input id="pq" placeholder="Buscar produto (huntsman, capacete...)"><button type="button" id="pclose">Fechar</button></div><div class="res"></div></div>
+    <form id="composer">
+      <button type="button" id="pbtn" title="Enviar cartão de produto" aria-label="Produto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></button>
+      <textarea rows="1" placeholder="Mensagem"></textarea>
+      <button id="send" aria-label="Enviar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg></button>
+    </form>`;
   setupPicker();
   renderHead();
   const ta = $("#composer textarea");
-  ta.onkeydown = (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); $("#composer").requestSubmit(); } };
+  const mobile = matchMedia("(max-width:760px)").matches;
+  ta.onkeydown = (e) => { if (!mobile && e.key === "Enter" && !e.shiftKey) { e.preventDefault(); $("#composer").requestSubmit(); } };
+  ta.oninput = () => { ta.style.height = "auto"; ta.style.height = Math.min(ta.scrollHeight, 120) + "px"; };
   $("#composer").onsubmit = async (e) => {
     e.preventDefault();
     const body = ta.value.trim(); if (!body) return;
-    ta.value = "";
+    ta.value = ""; ta.style.height = "";
     if (current.status !== "open") await setStatus("open");
     const { error } = await sb.from("messages").insert({ conversation_id: current.id, sender: "agent", agent_id: me.id, body });
     if (error) alert("Erro ao enviar: " + error.message);
@@ -218,18 +331,24 @@ function renderChat() {
 function renderHead() {
   if (!$("#chathead")) return;
   const c = current;
+  const page = c.page_url ? `<a href="${esc(c.page_url)}" target="_blank">${esc(c.page_url.replace(/^https?:\/\/(www\.)?/, "").slice(0, 50))}</a>` : "";
   $("#chathead").innerHTML = `
-    <button id="back" style="display:none">←</button>
-    <div class="info"><b>${esc(c.visitor_name || c.visitor_email || "Visitante " + c.id.slice(0, 4))}</b> <span class="tag ${c.status}">${LABEL[c.status]}</span><br>
-      ${c.page_url ? `Página: <a href="${esc(c.page_url)}" target="_blank">${esc(c.page_url.replace(/^https?:\/\//, "").slice(0, 60))}</a>` : ""}</div>
-    ${c.status !== "open" ? '<button class="primary" data-s="open">Assumir</button>' : ""}
-    ${c.status !== "bot" ? '<button data-s="bot">Devolver ao bot</button>' : ""}
-    ${c.status !== "closed" ? '<button data-s="closed">Encerrar</button>' : ""}`;
-  $("#chathead").querySelectorAll("button[data-s]").forEach((b) => b.onclick = () => setStatus(b.dataset.s));
-  if (matchMedia("(max-width:760px)").matches) {
-    $("#back").style.display = ""; $("#back").onclick = () => { document.documentElement.style.setProperty("--list", "block"); document.documentElement.style.setProperty("--chat", "none"); };
-  }
+    <button id="back" aria-label="Voltar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+    ${avatar(c, "sm")}
+    <div class="info"><b>${esc(nameOf(c))}</b><span>${STATUS[c.status]}${page ? " · " + page : ""}</span></div>
+    <div id="menu"><button class="iconbtn" aria-label="Opções"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></button>
+      <div class="dd">
+        ${c.status !== "open" ? '<button data-s="open">Assumir conversa</button>' : ""}
+        ${c.status !== "bot" ? '<button data-s="bot">Devolver ao bot</button>' : ""}
+        ${c.status !== "closed" ? '<button data-s="closed" class="danger">Encerrar conversa</button>' : ""}
+      </div></div>`;
+  $("#takeover").innerHTML = c.status === "waiting"
+    ? '<div class="takeover"><span>Cliente aguardando uma pessoa.</span><button data-s="open">Assumir</button></div>' : "";
+  document.querySelectorAll("#chathead button[data-s], #takeover button[data-s]").forEach((b) => b.onclick = () => { $("#menu").classList.remove("open"); setStatus(b.dataset.s); });
+  $("#menu .iconbtn").onclick = (e) => { e.stopPropagation(); $("#menu").classList.toggle("open"); };
+  $("#back").onclick = () => { document.documentElement.style.setProperty("--list", "flex"); document.documentElement.style.setProperty("--chat", "none"); current = null; renderList(); };
 }
+document.addEventListener("click", () => $("#menu")?.classList.remove("open"));
 
 async function setStatus(s) {
   const patch = { status: s, assigned_agent: s === "open" ? me.id : null };
@@ -238,12 +357,16 @@ async function setStatus(s) {
   Object.assign(current, patch); renderHead(); loadConvs();
 }
 
+let lastDay = "";
 function addMsg(m) {
   if (!$("#msgs") || document.getElementById("m-" + m.id)) return;
+  const dl = dayLabel(m.created_at);
+  if (dl !== lastDay) { lastDay = dl; const d = document.createElement("div"); d.className = "day"; d.textContent = dl; $("#msgs").appendChild(d); }
   const el = document.createElement("div");
   el.id = "m-" + m.id; el.className = "m " + m.sender;
-  const who = { visitor: "Cliente", bot: "Bot", agent: "Atendente", system: "" }[m.sender];
-  el.innerHTML = esc(m.body) + cardsHtml(m.products) + (m.sender !== "system" ? `<small>${who} · ${fmt(m.created_at)}</small>` : "");
+  const who = { visitor: "", bot: "Bot · ", agent: "", system: "" }[m.sender];
+  const time = new Date(m.created_at).toLocaleTimeString("pt-BR", { hour:"2-digit", minute:"2-digit" });
+  el.innerHTML = esc(m.body) + cardsHtml(m.products) + (m.sender !== "system" ? `<small>${who}${time}</small>` : "");
   $("#msgs").appendChild(el); $("#msgs").scrollTop = $("#msgs").scrollHeight;
 }
 
